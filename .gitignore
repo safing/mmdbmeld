@@ -1,0 +1,12 @@
+# Binaries
+geoip-builder
+mmdb-check
+
+# Input
+input/**.csv
+input/**.7z
+input/**.txt
+input/**.etag
+
+# Output
+output/*
