@@ -1,6 +1,6 @@
 # Binaries
-mmdbmeld
-mmdbcheck
+cmd/mmdbmeld/mmdbmeld
+cmd/mmdbcheck/mmdbcheck
 
 # Input
 input/**.csv
