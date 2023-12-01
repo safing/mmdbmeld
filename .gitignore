@@ -1,6 +1,6 @@
 # Binaries
-geoip-builder
-mmdb-check
+mmdbmeld
+mmdbcheck
 
 # Input
 input/**.csv

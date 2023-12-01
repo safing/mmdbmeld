@@ -6,8 +6,8 @@ Follow instructions here: <https://go.dev/dl/>
 
 __Step 1: Compile__
 
-    $ go build -C cmd/geoip-builder
-    $ go build -C cmd/mmdb-check
+    $ go build -C cmd/mmdbmeld
+    $ go build -C cmd/mmdbcheck
 
 __Step 2: Download geoip data sources__
 
@@ -19,7 +19,7 @@ _Default sources are CC0 and provided by <https://github.com/sapics/ip-location-
 
 __Step 3: Build your MMDBs__
 
-    $ ./cmd/geoip-builder/geoip-builder config-example.yml
+    $ ./cmd/mmdbmeld/mmdbmeld config-example.yml
 
     ==========
     building My IPv4 GeoIP DB
@@ -54,8 +54,8 @@ __Step 3: Build your MMDBs__
 
 __Step 4: Check your MMDBs__
 
-    $ ./cmd/mmdb-check/mmdb-check all output/geoip-v4.mmdb
-    $ ./cmd/mmdb-check/mmdb-check all output/geoip-v6.mmdb
+    $ ./cmd/mmdbcheck/mmdbcheck all output/geoip-v4.mmdb
+    $ ./cmd/mmdbcheck/mmdbcheck all output/geoip-v6.mmdb
     
     [...]
 

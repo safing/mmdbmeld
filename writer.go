@@ -1,4 +1,4 @@
-package geoipbuilder
+package mmdbmeld
 
 import (
 	"fmt"

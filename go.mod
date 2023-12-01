@@ -1,4 +1,4 @@
-module github.com/safing/geoip-builder
+module github.com/safing/mmdbmeld
 
 go 1.18
 
