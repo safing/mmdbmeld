@@ -1,4 +1,4 @@
-# Build your own GeoIP MDDB!
+# Build your own GeoIP .mmdb!
 
 __Step 0: Setup Go__
 
