@@ -1,6 +1,7 @@
 # Binaries
 cmd/mmdbmeld/mmdbmeld
 cmd/mmdbcheck/mmdbcheck
+cmd/mmdbquery/mmdbquery
 
 # Input
 input/**.csv
@@ -10,3 +11,6 @@ input/**.etag
 
 # Output
 output/*
+
+# Dev files
+config.yml

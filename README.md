@@ -8,6 +8,7 @@ __Step 1: Compile__
 
     $ go build -C cmd/mmdbmeld
     $ go build -C cmd/mmdbcheck
+    $ go build -C cmd/mmdbquery
 
 __Step 2: Download geoip data sources__
 
@@ -106,6 +107,16 @@ This check queries the following fields:
 - AC: `is_anycast`
 - SP: `is_satellite_provider`
 - AP: `is_anonymous_proxy`
+
+__Step 5: Query your MMDBs__
+
+    $ ./cmd/mmdbquery/mmdbquery output/geoip-v4.mmdb 1.1.1.1
+
+    1.1.1.0/24:
+      autonomous_system_number: 13335
+      autonomous_system_organization: Cloudflare, Inc.
+      country:
+        iso_code: AU
 
 ### Customize your MMDBs.
 
