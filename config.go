@@ -19,6 +19,7 @@ type DatabaseConfig struct {
 	Inputs   []DatabaseInput   `yaml:"inputs"`
 	Output   string            `yaml:"output"`
 	Optimize Optimizations     `yaml:"optimize"`
+	Merge    MergeConfig       `yaml:"merge"`
 }
 
 // MMDBConfig holds mmdb specific config.
@@ -39,6 +40,17 @@ type Optimizations struct {
 	FloatDecimals  int  `yaml:"floatDecimals"`
 	ForceIPVersion bool `yaml:"forceIPVersion"`
 	MaxPrefix      int  `yaml:"maxPrefix"`
+}
+
+// MergeConfig holds merge configuration.
+type MergeConfig struct {
+	ConditionalResets []ConditionalResetConfig `yaml:"conditionalResets"`
+}
+
+// ConditionalResetConfig defines a conditional reset merge config.
+type ConditionalResetConfig struct {
+	IfChanged []string `yaml:"ifChanged"`
+	Reset     []string `yaml:"reset"`
 }
 
 // LoadConfig loads a configuration file.

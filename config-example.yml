@@ -8,6 +8,7 @@ databases:
       "autonomous_system_organization": string
       "autonomous_system_number": uint32
     inputs: # Source data and their mapping.
+      # Inputs are processed as listed. Earlier entries are overwritten by later entries.
       - file: "input/asn-ipv4.csv"
         fields: ["from", "to", "autonomous_system_number", "autonomous_system_organization"]
       - file: "input/geo-whois-asn-country-ipv4.csv"
@@ -17,6 +18,12 @@ databases:
       floatDecimals: 2 # Limit floats (eg. coordinates) to decimals for smaller DB size. (0=off, set to -1 to no decimals)
       forceIPVersion: true # Check IPs and discard IPs with the wrong version. (IPv4 and live in IPv6 mmdb)
       maxPrefix: 0 # Remove any network prefixes greater than maxPrefix for smaller DB size. (0=off)
+    merge:
+      conditionalResets: # Reset set of top level entries if another set is changed.
+        # Reset the location entry when the country is changed.
+        # If the new entry also has a location, it is kept, but a different country without location resets the location.
+        - ifChanged: ["country"]
+          reset: ["location"]
 
   - name: "My IPv6 GeoIP DB"
     mmdb:
@@ -27,6 +34,7 @@ databases:
       "autonomous_system_organization": string
       "autonomous_system_number": uint32
     inputs: # Source data and their mapping.
+      # Inputs are processed as listed. Earlier entries are overwritten by later entries.
       - file: "input/asn-ipv6.csv"
         fields: ["from", "to", "autonomous_system_number", "autonomous_system_organization"]
       - file: "input/geo-whois-asn-country-ipv6.csv"
@@ -36,3 +44,9 @@ databases:
       floatDecimals: 2 # Limit floats (eg. coordinates) to decimals for smaller DB size. (0=off, set to -1 to no decimals)
       forceIPVersion: true # Check IPs and discard IPs with the wrong version. (IPv4 and live in IPv6 mmdb)
       maxPrefix: 0 # Remove any network prefixes greater than maxPrefix for smaller DB size. (0=off)
+    merge:
+      conditionalResets: # Reset set of top level entries if another set is changed.
+        # Reset the location entry when the country is changed.
+        # If the new entry also has a location, it is kept, but a different country without location resets the location.
+        - ifChanged: ["country"]
+          reset: ["location"]

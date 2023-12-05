@@ -9,6 +9,7 @@ import (
 
 	"github.com/maxmind/mmdbwriter"
 	"github.com/maxmind/mmdbwriter/inserter"
+	"github.com/maxmind/mmdbwriter/mmdbtype"
 	"go4.org/netipx"
 )
 
@@ -40,6 +41,10 @@ func WriteMMDB(dbConfig DatabaseConfig, sources []Source, updates chan string) e
 		dbConfig.Optimize.FloatDecimals,
 		dbConfig.Optimize.ForceIPVersion,
 		dbConfig.Optimize.MaxPrefix,
+	))
+	sendUpdate(updates, fmt.Sprintf(
+		"conditional resets: %+v",
+		dbConfig.Merge.ConditionalResets,
 	))
 
 	// Close update channel when finished.
@@ -75,7 +80,7 @@ func WriteMMDB(dbConfig DatabaseConfig, sources []Source, updates chan string) e
 
 			mmdbMap, err := entry.ToMMDBMap(dbConfig.Optimize)
 			if err != nil {
-				sendUpdate(updates, fmt.Sprintf("failed to transform %+v: %s", entry, err.Error()))
+				sendUpdate(updates, fmt.Sprintf("failed to convert %+v to mmdb map: %s", entry, err.Error()))
 				continue
 			}
 
@@ -95,7 +100,7 @@ func WriteMMDB(dbConfig DatabaseConfig, sources []Source, updates chan string) e
 					}
 				}
 
-				err = writer.InsertFunc(entry.Net, inserter.TopLevelMergeWith(mmdbMap))
+				err = writer.InsertFunc(entry.Net, ConditionalResetTopLevelMergeWith(mmdbMap, dbConfig.Merge.ConditionalResets))
 				if err != nil {
 					sendUpdate(updates, fmt.Sprintf("failed to insert %+v: %s", entry, err.Error()))
 					continue
@@ -127,7 +132,7 @@ func WriteMMDB(dbConfig DatabaseConfig, sources []Source, updates chan string) e
 						continue
 					}
 
-					err = writer.InsertFunc(netipx.PrefixIPNet(subnet), inserter.TopLevelMergeWith(mmdbMap))
+					err = writer.InsertFunc(netipx.PrefixIPNet(subnet), ConditionalResetTopLevelMergeWith(mmdbMap, dbConfig.Merge.ConditionalResets))
 					if err != nil {
 						sendUpdate(updates, fmt.Sprintf("failed to insert %+v: %s", entry, err.Error()))
 						continue
@@ -171,14 +176,89 @@ func WriteMMDB(dbConfig DatabaseConfig, sources []Source, updates chan string) e
 		fileSize = stat.Size()
 	}
 	sendUpdate(updates, fmt.Sprintf(
-		"---\n%s finished: inserted %d entries in %s, resulting in %dMB",
+		"---\n%s finished: inserted %d entries in %s, resulting in %.2f MB written to %s",
 		dbConfig.Name,
 		totalInserts,
 		time.Since(totalStartTime).Round(time.Second),
-		fileSize/1000000,
+		float64(fileSize)/1000000,
+		dbConfig.Output,
 	))
 
 	return nil
+}
+
+// ConditionalResetTopLevelMergeWith is based on TopLevelMergeWith,
+// but conditionally resets fields as defined in the conditional reset config.
+// Both the new and existing value must be a Map. An error will be returned
+// otherwise.
+func ConditionalResetTopLevelMergeWith(newValue mmdbtype.DataType, cfg []ConditionalResetConfig) inserter.Func {
+	return func(existingValue mmdbtype.DataType) (mmdbtype.DataType, error) {
+		// Check if both values are maps before we start merging.
+		newMap, ok := newValue.(mmdbtype.Map)
+		if !ok {
+			return nil, fmt.Errorf(
+				"the new value is a %T, not a Map; ConditionalResetTopLevelMerge only works if both values are Map values",
+				newValue,
+			)
+		}
+		if existingValue == nil {
+			return newValue, nil
+		}
+		existingMap, ok := existingValue.(mmdbtype.Map)
+		if !ok {
+			return nil, fmt.Errorf(
+				"the existing value is a %T, not a Map; ConditionalResetTopLevelMerge only works if both values are Map values",
+				existingValue,
+			)
+		}
+
+		// Start merging.
+
+		// First, do a normal top-level merge.
+		returnMap := existingMap.Copy().(mmdbtype.Map) //nolint:forcetypeassert
+		for k, v := range newMap {
+			returnMap[k] = v.Copy()
+		}
+
+		// Then check which fields changed.
+		for _, c := range cfg {
+			var changed bool
+			for _, key := range c.IfChanged {
+				// Get existing value.
+				existingSubVal, ok := existingMap[mmdbtype.String(key)]
+				if !ok {
+					// There is no existing value of that key, so there is no change possible.
+					continue
+				}
+				// Get new value
+				newSubVal, ok := newMap[mmdbtype.String(key)]
+				if !ok {
+					// Value of that key is not being set, so there is no change possible.
+					continue
+				}
+				// Compare values if both are set.
+				if !newSubVal.Equal(existingSubVal) {
+					changed = true
+					break
+				}
+			}
+			// If any field changed, reset fields.
+			if changed {
+				for _, key := range c.Reset {
+					resetVal, ok := newMap[mmdbtype.String(key)]
+					if ok {
+						// Reset with new value.
+						returnMap[mmdbtype.String(key)] = resetVal
+					} else {
+						// Remove if no new value is present.
+						delete(returnMap, mmdbtype.String(key))
+					}
+				}
+			}
+		}
+
+		return returnMap, nil
+	}
 }
 
 func sendUpdate(to chan string, msg string) {

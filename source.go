@@ -66,7 +66,7 @@ func (se SourceEntry) ToMMDBMap(optim Optimizations) (mmdbtype.Map, error) {
 		// Transform value to mmdb type.
 		mmdbVal, err := entry.ToMMDBType(optim)
 		if err != nil {
-			return nil, fmt.Errorf("failed to transform %s with value %s (of type %s)", key, entry.Value, entry.Type)
+			return nil, fmt.Errorf("failed to transform %s with value %s (of type %s): %w", key, entry.Value, entry.Type, err)
 		}
 
 		// Get sub map for entry.
@@ -81,7 +81,7 @@ func (se SourceEntry) ToMMDBMap(optim Optimizations) (mmdbtype.Map, error) {
 			} else {
 				mapForEntry, ok = subMapVal.(mmdbtype.Map)
 				if !ok {
-					return nil, fmt.Errorf("submap %s already exists but is a %T, and not a map", strings.Join(keyParts[:1], "."), subMapVal)
+					return nil, fmt.Errorf("failed to transform %s: submap %s already exists but is a %T, and not a map", key, strings.Join(keyParts[:1], "."), subMapVal)
 				}
 			}
 		}
