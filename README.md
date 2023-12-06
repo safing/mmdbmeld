@@ -18,6 +18,10 @@ _Default sources are CC0/PDDL and provided by <https://github.com/sapics/ip-loca
 
     [...]
 
+Note:  
+If you start using mmdbmeld, it is highly recommended you choose geoip data sources suitable for your use case, in terms of size and quality.
+Be sure to also check the licenses of the data sources before using them.
+
 __Step 3: Build your MMDBs__
 
     $ ./cmd/mmdbmeld/mmdbmeld config-example.yml
@@ -120,9 +124,61 @@ __Step 5: Query your MMDBs__
 
 ### Customize your MMDBs.
 
-Take a look at the <config-example.yml> to get an idea how to customize your MMDB.
+Take a look at the [config-example.yml](https://github.com/safing/mmdbmeld/blob/master/config-example.yml) to get an idea how to customize your MMDB.
 
 There also several options to optimize your MMDB for smaller sizes (and reduced accuracy).
 
+It is highly recommended you choose geoip data sources suitable for your use case, in terms of size and quality.
+Be sure to also check the licenses of the data sources before using them.
+
 If you add more fields, it is a good idea to stick to the keys that MaxMind already uses. This keeps your MMDB compatible with existing systems.
 You can find the keys they use here: https://pkg.go.dev/github.com/oschwald/geoip2-golang#City
+
+### Supported Sources
+
+
+Start by defining the fields and their data type of the output mmdb:
+
+    databases:
+      - name: "My IPv4 GeoIP DB"
+        types:
+          "country.iso_code": string
+          "location.latitude": float32
+          "location.longitude": float32
+          "autonomous_system_organization": string
+          "autonomous_system_number": uint32
+          "is_anycast": bool
+          "is_satellite_provider": bool
+          "is_anonymous_proxy": bool
+
+There are three special fields which are not defined in the types:
+
+- from: The start address of an IP range.
+- to: The end address of an IP range.
+- net: An IP range in CIDR notation.
+
+These are used to derive the IP ranges the data (row, entry) is applicable for.
+
+### CSV
+
+Define columns with `fields`, which must match a field defined in the `types`:
+
+    fields: ["from", "to", "autonomous_system_number", "autonomous_system_organization"]
+
+All rows must have exactly the specified amount of columns. Use `-` to define a column you are not using, eg.:
+
+    fields: ["from", "to", "country.iso_code", "-", "-", "-", "-", "location.latitude", "location.longitude", "-"]
+
+### IPFire
+
+The [IPFire Firewall](https://www.ipfire.org/) maintains a [geoip database in a custom format](https://git.ipfire.org/?p=location/location-database.git;a=summary), which notably includes IP categorization, such as `is-anycast`.
+
+Define fields with `fieldMap`, mapping `types`, to IPFire database keys:
+
+    fieldMap:
+        "aut-num": "autonomous_system_number"
+        "name": "autonomous_system_organization"
+        "country": "country.iso_code"
+        "is-anycast": "is_anycast"
+        "is-satellite-provider": "is_satellite_provider"
+        "is-anonymous-proxy": "is_anonymous_proxy"
