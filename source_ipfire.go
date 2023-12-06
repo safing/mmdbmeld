@@ -152,9 +152,12 @@ func (ipf *IPFireSource) SourceEntryFromMimeHeader(data textproto.MIMEHeader) (*
 	if fieldName, ok := ipf.fieldMap["aut-num"]; ok {
 		if asNum := data.Get("aut-num"); asNum != "" {
 			asNum := strings.TrimPrefix(asNum, "AS")
-			se.Values[fieldName] = SourceValue{
-				Type:  ipf.types[fieldName],
-				Value: asNum,
+			fieldType, ok := ipf.types[fieldName]
+			if ok && fieldType != "" && fieldType != "-" {
+				se.Values[fieldName] = SourceValue{
+					Type:  fieldType,
+					Value: asNum,
+				}
 			}
 		}
 	}
@@ -162,9 +165,12 @@ func (ipf *IPFireSource) SourceEntryFromMimeHeader(data textproto.MIMEHeader) (*
 	// Parse AS Org.
 	if fieldName, ok := ipf.fieldMap["name"]; ok {
 		if asOrg := data.Get("name"); asOrg != "" {
-			se.Values[fieldName] = SourceValue{
-				Type:  ipf.types[fieldName],
-				Value: asOrg,
+			fieldType, ok := ipf.types[fieldName]
+			if ok && fieldType != "" && fieldType != "-" {
+				se.Values[fieldName] = SourceValue{
+					Type:  fieldType,
+					Value: asOrg,
+				}
 			}
 		}
 	}
@@ -172,9 +178,12 @@ func (ipf *IPFireSource) SourceEntryFromMimeHeader(data textproto.MIMEHeader) (*
 	// Parse country.
 	if fieldName, ok := ipf.fieldMap["country"]; ok {
 		if country := data.Get("country"); len(country) == 2 {
-			se.Values[fieldName] = SourceValue{
-				Type:  ipf.types[fieldName],
-				Value: country,
+			fieldType, ok := ipf.types[fieldName]
+			if ok && fieldType != "" && fieldType != "-" {
+				se.Values[fieldName] = SourceValue{
+					Type:  fieldType,
+					Value: country,
+				}
 			}
 		}
 	}
@@ -182,33 +191,45 @@ func (ipf *IPFireSource) SourceEntryFromMimeHeader(data textproto.MIMEHeader) (*
 	// Parse flags.
 	if fieldName, ok := ipf.fieldMap["is-anycast"]; ok {
 		if flag := data.Get("is-anycast"); flag != "" {
-			se.Values[fieldName] = SourceValue{
-				Type:  ipf.types[fieldName],
-				Value: "true",
+			fieldType, ok := ipf.types[fieldName]
+			if ok && fieldType != "" && fieldType != "-" {
+				se.Values[fieldName] = SourceValue{
+					Type:  fieldType,
+					Value: "true",
+				}
 			}
 		}
 	}
 	if fieldName, ok := ipf.fieldMap["is-satellite-provider"]; ok {
 		if flag := data.Get("is-satellite-provider"); flag != "" {
-			se.Values[fieldName] = SourceValue{
-				Type:  ipf.types[fieldName],
-				Value: "true",
+			fieldType, ok := ipf.types[fieldName]
+			if ok && fieldType != "" && fieldType != "-" {
+				se.Values[fieldName] = SourceValue{
+					Type:  fieldType,
+					Value: "true",
+				}
 			}
 		}
 	}
 	if fieldName, ok := ipf.fieldMap["is-anonymous-proxy"]; ok {
 		if flag := data.Get("is-anonymous-proxy"); flag != "" {
-			se.Values[fieldName] = SourceValue{
-				Type:  ipf.types[fieldName],
-				Value: "true",
+			fieldType, ok := ipf.types[fieldName]
+			if ok && fieldType != "" && fieldType != "-" {
+				se.Values[fieldName] = SourceValue{
+					Type:  fieldType,
+					Value: "true",
+				}
 			}
 		}
 	}
 	if fieldName, ok := ipf.fieldMap["drop"]; ok {
 		if flag := data.Get("drop"); flag != "" {
-			se.Values[fieldName] = SourceValue{
-				Type:  ipf.types[fieldName],
-				Value: "true",
+			fieldType, ok := ipf.types[fieldName]
+			if ok && fieldType != "" && fieldType != "-" {
+				se.Values[fieldName] = SourceValue{
+					Type:  fieldType,
+					Value: "true",
+				}
 			}
 		}
 	}

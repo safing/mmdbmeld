@@ -83,12 +83,15 @@ func (csv *CSVSource) NextEntry() (*SourceEntry, error) {
 			if v4 := se.To.To4(); v4 != nil {
 				se.To = v4
 			}
-		case "-":
+		case "", "-":
 			// Ignore
 		default:
-			se.Values[fieldName] = SourceValue{
-				Type:  csv.types[fieldName],
-				Value: row[i],
+			fieldType, ok := csv.types[fieldName]
+			if ok && fieldType != "" && fieldType != "-" {
+				se.Values[fieldName] = SourceValue{
+					Type:  csv.types[fieldName],
+					Value: row[i],
+				}
 			}
 		}
 	}

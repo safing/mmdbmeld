@@ -23,6 +23,11 @@ func main() {
 	for _, db := range c.Databases {
 		fmt.Printf("\n==========\nbuilding %s\n", db.Name)
 
+		// Apply defaults.
+		dbP := &db //nolint:gosec,scopelint // Only used within loop.
+		c.Defaults.ApplyTo(dbP)
+
+		// Load sources for database.
 		sources, err := mmdbmeld.LoadSources(db)
 		if err != nil {
 			fmt.Println(err)
@@ -42,6 +47,7 @@ func main() {
 			}
 		}()
 
+		// Read all sources and write to mmdb.
 		err = mmdbmeld.WriteMMDB(db, sources, updates)
 		if err != nil {
 			fmt.Println(err)

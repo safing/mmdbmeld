@@ -5,6 +5,8 @@ import (
 	"net"
 	"net/netip"
 	"os"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/maxmind/mmdbwriter"
@@ -31,15 +33,27 @@ func WriteMMDB(dbConfig DatabaseConfig, sources []Source, updates chan string) e
 		return fmt.Errorf("failed to create mmdb writer for %s: %w", dbConfig.Name, err)
 	}
 	sendUpdate(updates, fmt.Sprintf(
-		"database options set: IncludeReservedNetworks=%v IPVersion=%d RecordSize=%d",
-		opts.IncludeReservedNetworks,
+		"database options set: IPVersion=%d RecordSize=%d (IncludeReservedNetworks=%v DisableIPv4Aliasing=%v)",
 		opts.IPVersion,
 		opts.RecordSize,
+		opts.IncludeReservedNetworks,
+		opts.DisableIPv4Aliasing,
+	))
+	typeKeys := make([]string, 0, len(dbConfig.Types))
+	for k, v := range dbConfig.Types {
+		if v != "-" && v != "" {
+			typeKeys = append(typeKeys, k)
+		}
+	}
+	slices.Sort[[]string, string](typeKeys)
+	sendUpdate(updates, fmt.Sprintf(
+		"database types: %s",
+		strings.Join(typeKeys, ", "),
 	))
 	sendUpdate(updates, fmt.Sprintf(
 		"optimizations set: FloatDecimals=%d ForceIPVersion=%v MaxPrefix=%d",
 		dbConfig.Optimize.FloatDecimals,
-		dbConfig.Optimize.ForceIPVersion,
+		dbConfig.Optimize.ForceIPVersionEnabled(),
 		dbConfig.Optimize.MaxPrefix,
 	))
 	sendUpdate(updates, fmt.Sprintf(
@@ -88,7 +102,7 @@ func WriteMMDB(dbConfig DatabaseConfig, sources []Source, updates chan string) e
 				// Handle Network/Prefix Format.
 
 				// Ignore entry if the IP version is forced and it does not match the mmdb DB.
-				if dbConfig.Optimize.ForceIPVersion && ipVersion(entry.Net.IP) != opts.IPVersion {
+				if dbConfig.Optimize.ForceIPVersionEnabled() && ipVersion(entry.Net.IP) != opts.IPVersion {
 					continue
 				}
 
@@ -109,7 +123,7 @@ func WriteMMDB(dbConfig DatabaseConfig, sources []Source, updates chan string) e
 				// Handle From-To IP Format.
 
 				// Ignore entry if the IP version is forced and it does not match the mmdb DB.
-				if dbConfig.Optimize.ForceIPVersion && ipVersion(entry.From) != opts.IPVersion {
+				if dbConfig.Optimize.ForceIPVersionEnabled() && ipVersion(entry.From) != opts.IPVersion {
 					continue
 				}
 
