@@ -12,7 +12,7 @@ __Step 1: Compile__
 
 __Step 2: Download geoip data sources__
 
-_Default sources are CC0 and provided by <https://github.com/sapics/ip-location-db>_
+_Default sources are CC0/PDDL and provided by <https://github.com/sapics/ip-location-db>_
 
     $ ./input/update.sh
 
@@ -114,7 +114,7 @@ __Step 5: Query your MMDBs__
 
     1.1.1.0/24:
       autonomous_system_number: 13335
-      autonomous_system_organization: Cloudflare, Inc.
+      autonomous_system_organization: CLOUDFLARENET
       country:
         iso_code: AU
 

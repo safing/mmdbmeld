@@ -9,7 +9,7 @@ databases:
       "autonomous_system_number": uint32
     inputs: # Source data and their mapping.
       # Inputs are processed as listed. Earlier entries are overwritten by later entries.
-      - file: "input/asn-ipv4.csv"
+      - file: "input/iptoasn-asn-ipv4.csv"
         fields: ["from", "to", "autonomous_system_number", "autonomous_system_organization"]
       - file: "input/geo-whois-asn-country-ipv4.csv"
         fields: ["from", "to", "country.iso_code"]
@@ -35,7 +35,7 @@ databases:
       "autonomous_system_number": uint32
     inputs: # Source data and their mapping.
       # Inputs are processed as listed. Earlier entries are overwritten by later entries.
-      - file: "input/asn-ipv6.csv"
+      - file: "input/iptoasn-asn-ipv6.csv"
         fields: ["from", "to", "autonomous_system_number", "autonomous_system_organization"]
       - file: "input/geo-whois-asn-country-ipv6.csv"
         fields: ["from", "to", "country.iso_code"]

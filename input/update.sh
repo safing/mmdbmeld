@@ -9,19 +9,19 @@ echo
 
 ##########
 
-echo "updating asn-ipv4.csv"
+echo "updating iptoasn-asn-ipv4.csv"
 curl --silent --show-error \
-  --etag-save asn-ipv4.csv.etag \
-  --etag-compare asn-ipv4.csv.etag \
-  --output asn-ipv4.csv \
-  "https://cdn.jsdelivr.net/npm/@ip-location-db/asn/asn-ipv4.csv"
+  --etag-save iptoasn-asn-ipv4.csv.etag \
+  --etag-compare iptoasn-asn-ipv4.csv.etag \
+  --output iptoasn-asn-ipv4.csv \
+  "https://cdn.jsdelivr.net/npm/@ip-location-db/iptoasn-asn/iptoasn-asn-ipv4.csv"
 
-echo "updating asn-ipv6.csv"
+echo "updating iptoasn-asn-ipv6.csv"
 curl --silent --show-error \
-  --etag-save asn-ipv6.csv.etag \
-  --etag-compare asn-ipv6.csv.etag \
-  --output asn-ipv6.csv \
-  "https://cdn.jsdelivr.net/npm/@ip-location-db/asn/asn-ipv6.csv"
+  --etag-save iptoasn-asn-ipv6.csv.etag \
+  --etag-compare iptoasn-asn-ipv6.csv.etag \
+  --output iptoasn-asn-ipv6.csv \
+  "https://cdn.jsdelivr.net/npm/@ip-location-db/iptoasn-asn/iptoasn-asn-ipv6.csv"
 
 ##########
 
