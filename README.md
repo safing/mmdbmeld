@@ -143,17 +143,19 @@ You can find the keys they use here: https://pkg.go.dev/github.com/oschwald/geoi
 
 Start by defining the fields and their data type of the output mmdb:
 
-    databases:
-      - name: "My IPv4 GeoIP DB"
-        types:
-          "country.iso_code": string
-          "location.latitude": float32
-          "location.longitude": float32
-          "autonomous_system_organization": string
-          "autonomous_system_number": uint32
-          "is_anycast": bool
-          "is_satellite_provider": bool
-          "is_anonymous_proxy": bool
+```yaml
+databases:
+  - name: "My IPv4 GeoIP DB"
+    types:
+      "country.iso_code": string
+      "location.latitude": float32
+      "location.longitude": float32
+      "autonomous_system_organization": string
+      "autonomous_system_number": uint32
+      "is_anycast": bool
+      "is_satellite_provider": bool
+      "is_anonymous_proxy": bool
+```
 
 There are three special fields which are not defined in the types:
 
@@ -167,15 +169,19 @@ These are used to derive the IP ranges the data (row, entry) is applicable for.
 
 Define columns with `fields`, which must match a field defined in the `types`:
 
-    databases:
-      ...
-        fields: ["from", "to", "autonomous_system_number", "autonomous_system_organization"]
+```yaml
+databases:
+  ...
+    fields: ["from", "to", "autonomous_system_number", "autonomous_system_organization"]
+```
 
 All rows must have exactly the specified amount of columns. Use `-` to define a column you are not using, eg.:
 
-    databases:
-      ...
-        fields: ["from", "to", "country.iso_code", "-", "-", "-", "-", "location.latitude", "location.longitude", "-"]
+```yaml
+databases:
+  ...
+    fields: ["from", "to", "country.iso_code", "-", "-", "-", "-", "location.latitude", "location.longitude", "-"]
+```
 
 ##### IPFire
 
@@ -183,15 +189,17 @@ The [IPFire Firewall](https://www.ipfire.org/) maintains a [geoip database in a 
 
 Define fields with `fieldMap`, mapping IPFire database keys to `types`:
 
-    databases:
-      ...
-        fieldMap:
-          "aut-num": "autonomous_system_number"
-          "name": "autonomous_system_organization"
-          "country": "country.iso_code"
-          "is-anycast": "is_anycast"
-          "is-satellite-provider": "is_satellite_provider"
-          "is-anonymous-proxy": "is_anonymous_proxy"
+```yaml
+databases:
+  ...
+    fieldMap:
+      "aut-num": "autonomous_system_number"
+      "name": "autonomous_system_organization"
+      "country": "country.iso_code"
+      "is-anycast": "is_anycast"
+      "is-satellite-provider": "is_satellite_provider"
+      "is-anonymous-proxy": "is_anonymous_proxy"
+```
 
 ### Defaults
 
@@ -200,23 +208,25 @@ A common case is when you build an IPv4 and IPv6 database separately.
 
 When using defaults, always check if they are applied correctly by checking the logs when building the databases.
 
-    defaults:
-      types: # Entries are merged.
-        # Databases inherit defaults types, if not yet set.
-        # You can define a type with a "-" type string to ignore a default in a database config.
-        "country.iso_code": string
-        "location.latitude": float32
-        "location.longitude": float32
-        "autonomous_system_organization": string
-        "autonomous_system_number": uint32
-        "is_anycast": bool
-        "is_satellite_provider": bool
-        "is_anonymous_proxy": bool
-      optimize: # Entries are used as default separately.
-        floatDecimals: 2 # Default is used when database value is 0.
-        forceIPVersion: true # Default is used when database value is not defined.
-        maxPrefix: 24 # Default is used when database value is 0.
-      merge: # Entries are used as default separately.
-        conditionalResets: # Default is used when not defined or empty in database config.
-        - ifChanged: ["country"]
-            reset: ["location"]
+```yaml
+defaults:
+  types: # Entries are merged.
+    # Databases inherit defaults types, if not yet set.
+    # You can define a type with a "-" type string to ignore a default in a database config.
+    "country.iso_code": string
+    "location.latitude": float32
+    "location.longitude": float32
+    "autonomous_system_organization": string
+    "autonomous_system_number": uint32
+    "is_anycast": bool
+    "is_satellite_provider": bool
+    "is_anonymous_proxy": bool
+  optimize: # Entries are used as default separately.
+    floatDecimals: 2 # Default is used when database value is 0.
+    forceIPVersion: true # Default is used when database value is not defined.
+    maxPrefix: 24 # Default is used when database value is 0.
+  merge: # Entries are used as default separately.
+    conditionalResets: # Default is used when not defined or empty in database config.
+    - ifChanged: ["country"]
+        reset: ["location"]
+```
