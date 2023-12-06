@@ -173,7 +173,7 @@ All rows must have exactly the specified amount of columns. Use `-` to define a 
 
 The [IPFire Firewall](https://www.ipfire.org/) maintains a [geoip database in a custom format](https://git.ipfire.org/?p=location/location-database.git;a=summary), which notably includes IP categorization, such as `is-anycast`.
 
-Define fields with `fieldMap`, mapping `types`, to IPFire database keys:
+Define fields with `fieldMap`, mapping IPFire database keys to `types`:
 
     fieldMap:
         "aut-num": "autonomous_system_number"
