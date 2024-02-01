@@ -114,7 +114,7 @@ func WriteMMDB(dbConfig DatabaseConfig, sources []Source, updates chan string) e
 					}
 				}
 
-				err = writer.InsertFunc(entry.Net, ConditionalResetTopLevelMergeWith(mmdbMap, dbConfig.Merge.ConditionalResets))
+				err = writer.InsertFunc(entry.Net, Inserter(mmdbMap, dbConfig.Merge))
 				if err != nil {
 					sendUpdate(updates, fmt.Sprintf("failed to insert %+v: %s", entry, err.Error()))
 					continue
@@ -146,7 +146,7 @@ func WriteMMDB(dbConfig DatabaseConfig, sources []Source, updates chan string) e
 						continue
 					}
 
-					err = writer.InsertFunc(netipx.PrefixIPNet(subnet), ConditionalResetTopLevelMergeWith(mmdbMap, dbConfig.Merge.ConditionalResets))
+					err = writer.InsertFunc(netipx.PrefixIPNet(subnet), Inserter(mmdbMap, dbConfig.Merge))
 					if err != nil {
 						sendUpdate(updates, fmt.Sprintf("failed to insert %+v: %s", entry, err.Error()))
 						continue
@@ -201,12 +201,14 @@ func WriteMMDB(dbConfig DatabaseConfig, sources []Source, updates chan string) e
 	return nil
 }
 
-// ConditionalResetTopLevelMergeWith is based on TopLevelMergeWith,
-// but conditionally resets fields as defined in the conditional reset config.
-// Both the new and existing value must be a Map. An error will be returned
-// otherwise.
-func ConditionalResetTopLevelMergeWith(newValue mmdbtype.DataType, cfg []ConditionalResetConfig) inserter.Func {
+// Inserter is based on TopLevelMergeWith, but does addition processing based on config.
+func Inserter(newValue mmdbtype.DataType, cfg MergeConfig) inserter.Func {
 	return func(existingValue mmdbtype.DataType) (mmdbtype.DataType, error) {
+		// Always fully replace.
+		if cfg.AlwaysReplace {
+			return newValue, nil
+		}
+
 		// Check if both values are maps before we start merging.
 		newMap, ok := newValue.(mmdbtype.Map)
 		if !ok {
@@ -231,11 +233,24 @@ func ConditionalResetTopLevelMergeWith(newValue mmdbtype.DataType, cfg []Conditi
 		// First, do a normal top-level merge.
 		returnMap := existingMap.Copy().(mmdbtype.Map) //nolint:forcetypeassert
 		for k, v := range newMap {
-			returnMap[k] = v.Copy()
+			newValue := v.Copy()
+
+			// Check if we should merge an array type.
+			if cfg.MergeArrays {
+				if newArray, ok := newValue.(mmdbtype.Slice); ok {
+					if returnArray, ok := returnMap[k].(mmdbtype.Slice); ok {
+						returnMap[k] = append(returnArray, newArray...)
+						continue
+					}
+				}
+			}
+
+			// Simply assign new value if no special processing was needed.
+			returnMap[k] = newValue
 		}
 
 		// Then check which fields changed.
-		for _, c := range cfg {
+		for _, c := range cfg.ConditionalResets {
 			var changed bool
 			for _, key := range c.IfChanged {
 				// Get existing value.

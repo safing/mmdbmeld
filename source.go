@@ -95,54 +95,63 @@ func (se SourceEntry) ToMMDBMap(optim Optimizations) (mmdbtype.Map, error) {
 
 // ToMMDBType transforms the source value to the correct mmdb type.
 func (sv SourceValue) ToMMDBType(optim Optimizations) (mmdbtype.DataType, error) {
-	switch sv.Type {
+	subType, isArrayType := strings.CutPrefix(sv.Type, "array:")
+	if isArrayType {
+		return toMMDBArray(subType, sv.Value, optim)
+	}
+
+	return toMMDBType(sv.Type, sv.Value, optim)
+}
+
+func toMMDBType(fieldType, fieldValue string, optim Optimizations) (mmdbtype.DataType, error) {
+	switch fieldType {
 	case "bool":
-		v, err := strconv.ParseBool(sv.Value)
+		v, err := strconv.ParseBool(fieldValue)
 		if err != nil {
 			return nil, err
 		}
 		return mmdbtype.Bool(v), nil
 
 	case "string":
-		return mmdbtype.String(sv.Value), nil
+		return mmdbtype.String(fieldValue), nil
 
 	case "hexbytes":
-		v, err := hex.DecodeString(sv.Value)
+		v, err := hex.DecodeString(fieldValue)
 		if err != nil {
 			return nil, err
 		}
 		return mmdbtype.Bytes(v), nil
 
 	case "int32":
-		v, err := strconv.ParseInt(sv.Value, 10, 32)
+		v, err := strconv.ParseInt(fieldValue, 10, 32)
 		if err != nil {
 			return nil, err
 		}
 		return mmdbtype.Int32(int32(v)), nil
 
 	case "uint16":
-		v, err := strconv.ParseUint(sv.Value, 10, 16)
+		v, err := strconv.ParseUint(fieldValue, 10, 16)
 		if err != nil {
 			return nil, err
 		}
 		return mmdbtype.Uint16(uint16(v)), nil
 
 	case "uint32":
-		v, err := strconv.ParseUint(sv.Value, 10, 32)
+		v, err := strconv.ParseUint(fieldValue, 10, 32)
 		if err != nil {
 			return nil, err
 		}
 		return mmdbtype.Uint32(uint32(v)), nil
 
 	case "uint64":
-		v, err := strconv.ParseUint(sv.Value, 10, 64)
+		v, err := strconv.ParseUint(fieldValue, 10, 64)
 		if err != nil {
 			return nil, err
 		}
 		return mmdbtype.Uint64(v), nil
 
 	case "float32":
-		v, err := strconv.ParseFloat(sv.Value, 32)
+		v, err := strconv.ParseFloat(fieldValue, 32)
 		if err != nil {
 			return nil, err
 		}
@@ -152,7 +161,7 @@ func (sv SourceValue) ToMMDBType(optim Optimizations) (mmdbtype.DataType, error)
 		return mmdbtype.Float32(v), nil
 
 	case "float64":
-		v, err := strconv.ParseFloat(sv.Value, 64)
+		v, err := strconv.ParseFloat(fieldValue, 64)
 		if err != nil {
 			return nil, err
 		}
@@ -164,6 +173,21 @@ func (sv SourceValue) ToMMDBType(optim Optimizations) (mmdbtype.DataType, error)
 	default:
 		return nil, errors.New("unsupport type")
 	}
+}
+
+func toMMDBArray(fieldType, fieldValue string, optim Optimizations) (mmdbtype.DataType, error) {
+	fields := strings.Fields(fieldValue)
+	array := make([]mmdbtype.DataType, 0, len(fields))
+
+	for i, field := range strings.Fields(fieldValue) {
+		entry, err := toMMDBType(fieldType, field, optim)
+		if err != nil {
+			return nil, fmt.Errorf("array entry #%d is invalid: %w", i, err)
+		}
+		array = append(array, entry)
+	}
+
+	return mmdbtype.Slice(array), nil
 }
 
 func roundToDecimalPlaces(num float64, decimalPlaces int) float64 {
