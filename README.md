@@ -167,23 +167,31 @@ These are used to derive the IP ranges the data (row, entry) is applicable for.
 
 ##### CSV
 
+File suffix `.csv`.
+
 Define columns with `fields`, which must match a field defined in the `types`:
 
 ```yaml
 databases:
-  ...
-    fields: ["from", "to", "autonomous_system_number", "autonomous_system_organization"]
+  - name: "Example DB"
+    inputs:
+      - file: "example.csv"
+        fields: ["from", "to", "autonomous_system_number", "autonomous_system_organization"]
 ```
 
 All rows must have exactly the specified amount of columns. Use `-` to define a column you are not using, eg.:
 
 ```yaml
 databases:
-  ...
-    fields: ["from", "to", "country.iso_code", "-", "-", "-", "-", "location.latitude", "location.longitude", "-"]
+  - name: "Example DB"
+    inputs:
+      - file: "example.csv"
+        fields: ["from", "to", "country.iso_code", "-", "-", "-", "-", "location.latitude", "location.longitude", "-"]
 ```
 
 ##### IPFire
+
+File suffix `.ipfire.txt`.
 
 The [IPFire Firewall](https://www.ipfire.org/) maintains a [geoip database in a custom format](https://git.ipfire.org/?p=location/location-database.git;a=summary), which notably includes IP categorization, such as `is-anycast`.
 
@@ -191,14 +199,16 @@ Define fields with `fieldMap`, mapping IPFire database keys to `types`:
 
 ```yaml
 databases:
-  ...
-    fieldMap:
-      "aut-num": "autonomous_system_number"
-      "name": "autonomous_system_organization"
-      "country": "country.iso_code"
-      "is-anycast": "is_anycast"
-      "is-satellite-provider": "is_satellite_provider"
-      "is-anonymous-proxy": "is_anonymous_proxy"
+  - name: "Example DB"
+    inputs:
+      - file: "example.ipfire.txt"
+        fieldMap:
+          "aut-num": "autonomous_system_number"
+          "name": "autonomous_system_organization"
+          "country": "country.iso_code"
+          "is-anycast": "is_anycast"
+          "is-satellite-provider": "is_satellite_provider"
+          "is-anonymous-proxy": "is_anonymous_proxy"
 ```
 
 ### Defaults
