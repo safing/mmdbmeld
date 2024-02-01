@@ -57,7 +57,9 @@ func WriteMMDB(dbConfig DatabaseConfig, sources []Source, updates chan string) e
 		dbConfig.Optimize.MaxPrefix,
 	))
 	sendUpdate(updates, fmt.Sprintf(
-		"conditional resets: %+v",
+		"merge config: AlwaysReplace=%v MergeArrays=%v ConditionalResets=%+v",
+		dbConfig.Merge.AlwaysReplace,
+		dbConfig.Merge.MergeArrays,
 		dbConfig.Merge.ConditionalResets,
 	))
 
