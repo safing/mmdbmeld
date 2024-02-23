@@ -57,6 +57,8 @@ func (o Optimizations) ForceIPVersionEnabled() bool {
 
 // MergeConfig holds merge configuration.
 type MergeConfig struct {
+	AlwaysReplace     bool                     `yaml:"alwaysReplace"`
+	MergeArrays       bool                     `yaml:"mergeArrays"`
 	ConditionalResets []ConditionalResetConfig `yaml:"conditionalResets"`
 }
 
