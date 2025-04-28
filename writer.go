@@ -2,6 +2,7 @@ package mmdbmeld
 
 import (
 	"fmt"
+	"maps"
 	"net"
 	"net/netip"
 	"os"
@@ -233,22 +234,26 @@ func Inserter(newValue mmdbtype.DataType, cfg MergeConfig) inserter.Func {
 		// Start merging.
 
 		// First, do a normal top-level merge.
-		returnMap := existingMap.Copy().(mmdbtype.Map) //nolint:forcetypeassert
-		for k, v := range newMap {
-			newValue := v.Copy()
 
+		// We do a shallow copy to save memory.
+		returnMap := make(mmdbtype.Map, len(existingMap)+len(newMap))
+		maps.Copy(returnMap, existingMap)
+
+		for k, v := range newMap {
 			// Check if we should merge an array type.
 			if cfg.MergeArrays {
 				if newArray, ok := newValue.(mmdbtype.Slice); ok {
 					if returnArray, ok := returnMap[k].(mmdbtype.Slice); ok {
-						returnMap[k] = append(returnArray, newArray...)
+						// We cannot append to the existing value as it may be shared
+						// with other data values in the tree.
+						returnMap[k] = slices.Concat(returnArray, newArray)
 						continue
 					}
 				}
 			}
 
 			// Simply assign new value if no special processing was needed.
-			returnMap[k] = newValue
+			returnMap[k] = v
 		}
 
 		// Then check which fields changed.
