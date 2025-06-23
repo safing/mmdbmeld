@@ -93,7 +93,7 @@ func (csv *CSVSource) NextEntry() (*SourceEntry, error) {
 			// Ignore
 		default:
 			fieldType, ok := csv.types[fieldName]
-			if ok && fieldType != "" && fieldType != "-" {
+			if ok && fieldType != "" && fieldType != "-" && row[i] != "" {
 				se.Values[fieldName] = SourceValue{
 					Type:  csv.types[fieldName],
 					Value: row[i],
