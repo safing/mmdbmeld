@@ -83,6 +83,12 @@ func (csv *CSVSource) NextEntry() (*SourceEntry, error) {
 			if v4 := se.To.To4(); v4 != nil {
 				se.To = v4
 			}
+		case "net":
+			_, ipNet, err := net.ParseCIDR(row[i])
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse net %q: %w", row[i], err)
+			}
+			se.Net = ipNet
 		case "", "-":
 			// Ignore
 		default:
